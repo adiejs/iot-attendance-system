@@ -1,58 +1,140 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏥 Smart IoT Attendance System (Laravel + ESP32)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Filament](https://img.shields.io/badge/Filament-EAB308?style=for-the-badge&logo=filament&logoColor=white)
+![Vue.js](https://img.shields.io/badge/Reverb_WebSockets-4B32C3?style=for-the-badge&logo=laravel&logoColor=white)
+![ESP32](https://img.shields.io/badge/ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)
 
-## About Laravel
+Sistem Manajemen Absensi dan Kepegawaian modern berbasis Internet of Things (IoT). Dibangun menggunakan ekosistem Laravel terpadu untuk menerima data dari perangkat keras ESP32, mengirimkan notifikasi kehadiran secara *real-time*, dan dikelola melalui antarmuka admin yang elegan.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sistem ini sangat ideal diimplementasikan pada instansi kesehatan, rumah sakit, perkantoran, atau kampus yang membutuhkan rekapitulasi kehadiran fisik yang cepat, akurat, dan terpusat.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Fitur Utama
 
-## Learning Laravel
+* **Single Point of Entry (Auto-Discovery):** Alat keras hanya menembak ke satu *endpoint* API (`/api/attend`). 
+  * Jika kartu **baru** di-*tap*, sistem otomatis mendaftarkan UID tanpa nama (menunggu admin untuk melengkapi data).
+  * Jika kartu **sudah terdaftar** dan lengkap, sistem langsung memproses kehadiran.
+* **Real-time Monitoring:** Menggunakan **Laravel Reverb (WebSockets)**. Data absen dan foto pegawai dari ESP32 langsung ter-*update* di layar Admin tanpa perlu *refresh* halaman.
+* **Tangkapan Foto Bukti:** Menerima pengiriman data gambar (*Base64*) dari modul kamera ESP32 dan menyimpannya secara efisien di *local storage*.
+* **Tunneling Ready:** Dioptimalkan untuk berjalan di atas **Cloudflare Tunnel**, memungkinkan *testing* perangkat IoT dari jaringan luar tanpa IP Publik statis.
+* **Modern Admin Panel:** Dibangun di atas **Filament v3** untuk manajemen data pegawai, penugasan kartu, dan pelaporan riwayat absensi yang responsif.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🛠️ Stack Teknologi
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Backend:** Laravel 13
+* **Admin Panel:** FilamentPHP v3
+* **WebSockets:** Laravel Reverb
+* **Frontend Build:** Vite (Node.js)
+* **Hardware Client:** ESP32 (Modul WiFi & Kamera) + Modul RFID RC522
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## ⚙️ Persyaratan Sistem
 
-## Agentic Development
+Pastikan sistem atau server Anda memiliki perangkat lunak berikut:
+* PHP >= 8.2
+* Composer
+* Node.js & NPM
+* Database (MySQL / MariaDB)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
+## 📦 Panduan Instalasi (Development)
+
+**1. Clone Repository & Masuk ke Folder**
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone [https://github.com/adiejs/iot-attendance-system.git](https://github.com/adiejs/iot-attendance-system.git)
+cd iot-attendance
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**2. Install Dependensi Backend & Frontend**
+```bash
+composer install
+npm install
+```
 
-## Contributing
+**3. Konfigurasi Environment (.env)**
+Salin file konfigurasi bawaan dan hasilkan *Application Key*:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+*(Jangan lupa atur koneksi database MySQL Anda di dalam file `.env`)*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**4. Konfigurasi WebSockets & Cloudflare Tunnel (Opsional)**
+Tambahkan dan sesuaikan parameter berikut pada file `.env` Anda agar komunikasi antara ESP32, Browser, dan Server dapat berjalan:
+```env
+APP_URL=[https://domain-cloudflare-anda.trycloudflare.com](https://domain-cloudflare-anda.trycloudflare.com)
 
-## Code of Conduct
+REVERB_APP_ID=514536
+REVERB_APP_KEY=my-secret-key
+REVERB_APP_SECRET=my-secret-password
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Konfigurasi Publik (Untuk Browser & Payload ESP32)
+REVERB_HOST="domain-cloudflare-anda.trycloudflare.com"
+REVERB_PORT=443
+REVERB_SCHEME=https
 
-## Security Vulnerabilities
+# Konfigurasi Server Lokal (Untuk mesin Laravel)
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=8080
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**5. Import Database & Build Aset**
+Jika Anda memiliki file *backup* `.sql`, silakan *import* menggunakan *database manager* (seperti HeidiSQL/phpMyAdmin). Jika tidak, jalankan migrasi tabel kosong:
+```bash
+php artisan migrate
+npm run build
+```
 
-## License
+**6. Tautkan Storage Gambar (Sangat Penting)**
+Agar foto dari perangkat kamera ESP32 dapat diakses oleh Filament panel, jalankan perintah ini (Bagi pengguna Windows, buka Terminal/CMD sebagai **Administrator**):
+```bash
+php artisan storage:link
+php artisan optimize:clear
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 🏃‍♂️ Cara Menjalankan Aplikasi
+
+Untuk menjalankan sistem secara utuh beserta fitur *real-time*, buka 3 tab terminal yang berbeda dan jalankan perintah berikut secara bersamaan:
+
+**Terminal 1 (Web Server):**
+```bash
+php artisan serve
+```
+
+**Terminal 2 (Reverb WebSockets Server):**
+```bash
+php artisan reverb:start
+```
+
+**Terminal 3 (Cloudflare Tunnel - Opsional untuk ESP32): (Opsional)**
+```bash
+cloudflared tunnel --url [http://127.0.0.1:8000](http://127.0.0.1:8000)
+```
+
+---
+
+## 📡 Dokumentasi API untuk Hardware (ESP32)
+
+Perangkat keras hanya perlu melakukan request `HTTP POST` ke satu *endpoint* utama.
+
+* **Endpoint:** `POST /api/attend`
+* **Headers:** `Content-Type: application/json`
+* **Payload Format:**
+```json
+{
+    "uid": "A1B2C3D4",
+    "foto": "string_base64_gambar_opsional_tanpa_header_data_uri"
+}
+```
+* **Skenario Respons:**
+  * `201 Created` - Kartu baru berhasil didaftarkan (Nama masih kosong).
+  * `200 OK` (PENDING) - Kartu sudah ada, namun admin belum melengkapi nama pegawai. Absen ditunda.
+  * `200 OK` (SUCCESS) - Absen berhasil diproses dan foto disimpan. WebSockets memicu pembaruan tabel otomatis.
+
+---
+*Dibuat untuk kebutuhan operasional sistem cerdas yang cepat, efisien, dan modern.*
+```
